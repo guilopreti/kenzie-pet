@@ -1,19 +1,10 @@
 from characteristics.models import Characteristic
+from characteristics.serializers import CharacteristicSerializer
 from groups.models import Group
+from groups.serializers import GroupSerializer
 from rest_framework import serializers
 
 from .models import Animal
-
-
-class AnimalGroupSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(max_length=20)
-    scientific_name = serializers.CharField(max_length=20)
-
-
-class AnimalCharacteristicSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(max_length=20)
 
 
 class AnimalSerializer(serializers.Serializer):
@@ -23,10 +14,14 @@ class AnimalSerializer(serializers.Serializer):
     weight = serializers.FloatField()
     sex = serializers.CharField(max_length=15)
 
-    group = AnimalGroupSerializer()
-    characteristics = AnimalCharacteristicSerializer(many=True)
+    group = GroupSerializer()
+    characteristics = CharacteristicSerializer(many=True)
 
     def create(self, validated_data):
+        validated_data["group"]["name"] = validated_data["group"]["name"].lower()
+        validated_data["group"]["scientific_name"] = validated_data["group"][
+            "scientific_name"
+        ].lower()
 
         try:
             group = Group.objects.get(name=validated_data["group"]["name"])
@@ -39,6 +34,7 @@ class AnimalSerializer(serializers.Serializer):
             characteristics = []
 
             for charact in validated_data["characteristics"]:
+                charact["name"] = charact["name"].lower()
                 try:
                     characteristics.append(
                         Characteristic.objects.get(name=charact["name"])
@@ -57,9 +53,21 @@ class AnimalSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         instance.name = validated_data.get("name", instance.name)
         instance.age = validated_data.get("age", instance.age)
-        instance.weigth = validated_data.get("weigth", instance.weigth)
-        instance.sex = validated_data.get("sex", instance.sex)
-        instance.group = validated_data.get("group", instance.group)
+        instance.weight = validated_data.get("weight", instance.weight)
+
+        if "characteristics" in validated_data.keys():
+            characteristics = []
+
+            for charact in validated_data["characteristics"]:
+                charact["name"] = charact["name"].lower()
+                try:
+                    characteristics.append(
+                        Characteristic.objects.get(name=charact["name"])
+                    )
+                except:
+                    characteristics.append(Characteristic.objects.create(**charact))
+
+            instance.characteristics.set(characteristics)
 
         instance.save()
         return instance
