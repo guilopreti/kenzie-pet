@@ -6,15 +6,18 @@ from .models import Animal
 
 
 class AnimalGroupSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=20)
     scientific_name = serializers.CharField(max_length=20)
 
 
 class AnimalCharacteristicSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=20)
 
 
 class AnimalSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=50)
     age = serializers.FloatField()
     weight = serializers.FloatField()
