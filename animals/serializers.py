@@ -14,21 +14,22 @@ class AnimalSerializer(serializers.Serializer):
     weight = serializers.FloatField()
     sex = serializers.CharField(max_length=15)
 
-    group = GroupSerializer()
-    characteristics = CharacteristicSerializer(many=True)
+    group = GroupSerializer(required=False)
+    characteristics = CharacteristicSerializer(many=True, required=False)
 
     def create(self, validated_data):
-        validated_data["group"]["name"] = validated_data["group"]["name"].lower()
-        validated_data["group"]["scientific_name"] = validated_data["group"][
-            "scientific_name"
-        ].lower()
+        if "group" in validated_data.keys():
+            validated_data["group"]["name"] = validated_data["group"]["name"].lower()
+            validated_data["group"]["scientific_name"] = validated_data["group"][
+                "scientific_name"
+            ].lower()
 
-        try:
-            group = Group.objects.get(name=validated_data["group"]["name"])
-            validated_data["group"] = group
-        except:
-            group = Group.objects.create(**validated_data["group"])
-            validated_data["group"] = group
+            try:
+                group = Group.objects.get(name=validated_data["group"]["name"])
+                validated_data["group"] = group
+            except:
+                group = Group.objects.create(**validated_data["group"])
+                validated_data["group"] = group
 
         if "characteristics" in validated_data.keys():
             characteristics = []
@@ -42,11 +43,15 @@ class AnimalSerializer(serializers.Serializer):
                 except:
                     characteristics.append(Characteristic.objects.create(**charact))
 
-        del validated_data["characteristics"]
+            del validated_data["characteristics"]
+
+            animal = Animal.objects.create(**validated_data)
+
+            animal.characteristics.set(characteristics)
+
+            return animal
 
         animal = Animal.objects.create(**validated_data)
-
-        animal.characteristics.set(characteristics)
 
         return animal
 

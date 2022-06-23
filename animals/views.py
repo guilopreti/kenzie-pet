@@ -19,20 +19,21 @@ class AnimalView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        try:
-            serializer = AnimalSerializer(data=request.data)
+        # try:
+        serializer = AnimalSerializer(data=request.data)
 
-            serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)
 
-            serializer = serializer.save()
+        serializer = serializer.save()
 
-            animal = AnimalSerializer(serializer)
-            return Response(animal.data, status=status.HTTP_201_CREATED)
-        except IntegrityError:
-            return Response(
-                {"message": "Group scientific name is already registered"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        animal = AnimalSerializer(serializer)
+        return Response(animal.data, status=status.HTTP_201_CREATED)
+
+    # except IntegrityError:
+    #     return Response(
+    #         {"message": "Group scientific name is already registered"},
+    #         status=status.HTTP_400_BAD_REQUEST,
+    #     )
 
 
 class AnimalParamsView(APIView):
