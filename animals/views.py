@@ -1,4 +1,3 @@
-from django.db import IntegrityError
 from django.shortcuts import get_list_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -19,7 +18,7 @@ class AnimalView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        # try:
+
         serializer = AnimalSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -28,12 +27,6 @@ class AnimalView(APIView):
 
         animal = AnimalSerializer(serializer)
         return Response(animal.data, status=status.HTTP_201_CREATED)
-
-    # except IntegrityError:
-    #     return Response(
-    #         {"message": "Group scientific name is already registered"},
-    #         status=status.HTTP_400_BAD_REQUEST,
-    #     )
 
 
 class AnimalParamsView(APIView):
